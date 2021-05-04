@@ -4,10 +4,11 @@ import numpy as np
 """
 n: Number of task
 states: array of the state of the task, 1 if finished, 0 otherwise
+pred: predictions of each task
 
 return an array of the power allocated to each task (which should sum to 1)
 """
-def roundRobin(n, states):
+def roundRobin(n, pred, states):
 
 	notDone = np.argwhere(states < 1).ravel()
 
@@ -20,7 +21,7 @@ def roundRobin(n, states):
 
 
 
-def randomAlgorithm(n, states):
+def randomAlgorithm(n, pred, states):
 
 	notDone = np.argwhere(states < 1).ravel()
 
@@ -28,3 +29,21 @@ def randomAlgorithm(n, states):
 	allocation[ notDone[np.random.randint(notDone.size)] ] = 1
 
 	return allocation
+
+
+
+def shortestPred(n, pred, states):
+
+	notDone = np.argwhere(states < 1).ravel()
+
+
+	argShortestNotDone = pred[notDone].argmin()
+
+	argShortest = notDone[argShortestNotDone]
+
+	allocation = np.zeros(n, dtype=np.float64)
+	allocation[ argShortest ] = 1
+
+	return allocation
+
+

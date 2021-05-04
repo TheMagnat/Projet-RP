@@ -8,10 +8,16 @@ arg:
 
 return duration array
 """
-def generateRandomDurations(n, maxDuration=10):
+def generateRandomDurations(n, maxDuration=3):
 
 	return np.random.randint(1, maxDuration, size=n)
 
+
+def generatePredictionsOnDurations(n, durations, variation=2):
+
+	ret = durations + np.random.randint(-variation, variation+1, size=n)
+	
+	return np.where(ret < 1, 1, ret)
 
 
 
@@ -64,14 +70,14 @@ def testScheduling(durations, scheduling):
 """
 Execute an algorithm on an instance "durations".
 
-The algorithm take the number of task and a state array
+The algorithm take the number of task, the predictions and a state array
 (which tell if a task if finished or not)
 and should return an array which contain
 the fraction of the computer allocated to the task at index i.
 It sum should be equal to 1.
 
 """
-def executeAlgorithm(durations, algorithm):
+def executeAlgorithm(durations, predictions, algorithm):
 
 	n = len(durations)
 	states = np.zeros(n, dtype=np.int)
@@ -84,7 +90,7 @@ def executeAlgorithm(durations, algorithm):
 
 		iteration += 1
 
-		allocation = algorithm(n, states.copy())
+		allocation = algorithm(n, predictions, states.copy())
 
 		if allocation.sum() > 1:
 			print("Allocation > 1, cheating")
@@ -98,4 +104,10 @@ def executeAlgorithm(durations, algorithm):
 		states[done] = 1
 
 	return score
+
+
+def rapport(optimum, solution):
+	return solution/optimum
+
+
 
