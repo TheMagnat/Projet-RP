@@ -86,28 +86,85 @@ def executeAlgorithm(durations, predictions, algorithm):
 
 	iteration = 0
 	score = 0
+
+	totalTime = 0
+
 	while states.sum() < n:
 
 		iteration += 1
 
 		allocation = algorithm(n, predictions, states.copy())
 
-		if allocation.sum() > 1:
-			print("Allocation > 1, cheating")
+		if not np.isclose(allocation.sum(), 1):
+			print("Allocation sum not equal to 1, cheating")
+			return -1
 
-		timeSpent += allocation
+		smallestCoef = np.inf
+		for alloc, (alreadySpent, dura) in zip(allocation, zip(timeSpent, durations)):
+
+			if alloc:
+
+				rez = np.linalg.solve(a=[[ alloc ]], b=[dura - alreadySpent])
+
+				if rez[0] < smallestCoef:
+					smallestCoef = rez[0]
+
+
+		totalTime += smallestCoef
+
+		timeSpent += allocation * smallestCoef
 
 		done = np.argwhere(np.isclose(timeSpent, durations)).ravel()
 
-		score += (states[done] != 1).sum() * iteration
+		score += (states[done] != 1).sum() * totalTime
 
 		states[done] = 1
 
+
 	return score
+
+
+#One by one version, not working with predRoundRobin
+# def executeAlgorithm(durations, predictions, algorithm):
+
+# 	n = len(durations)
+# 	states = np.zeros(n, dtype=np.int)
+# 	timeSpent = np.zeros(n, dtype=np.float64)
+
+
+# 	iteration = 0
+# 	score = 0
+# 	while states.sum() < n:
+
+# 		iteration += 1
+
+# 		allocation = algorithm(n, predictions, states.copy())
+
+# 		if allocation.sum() > 1:
+# 			print("Allocation > 1, cheating")
+
+# 		timeSpent += allocation
+
+# 		done = np.argwhere(np.isclose(timeSpent, durations)).ravel()
+
+# 		score += (states[done] != 1).sum() * iteration
+
+# 		states[done] = 1
+
+# 	return score
+
 
 
 def rapport(optimum, solution):
 	return solution/optimum
 
+
+	
+#Debug
+import algorithm
+if __name__ == "__main__":
+
+
+	print("Score:",executeAlgorithm2(np.array([3, 2, 2, 5, 2]), np.array([3, 3, 1, 4, 1]), algorithm.predRoundRobin) )
 
 

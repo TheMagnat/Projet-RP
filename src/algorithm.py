@@ -1,6 +1,8 @@
 
 import numpy as np
 
+LAMBDA = 0.2
+
 """
 n: Number of task
 states: array of the state of the task, 1 if finished, 0 otherwise
@@ -46,4 +48,31 @@ def shortestPred(n, pred, states):
 
 	return allocation
 
+
+def predRoundRobin(n, pred, states):
+
+	#For random
+	#randFloat = np.random.uniform()
+	#lambdaa = randFloat
+
+	lambdaa = LAMBDA
+
+
+	roroSpeed = lambdaa
+	predSpeed = 1 - lambdaa
+
+	allocationsRoro = roundRobin(n, pred, states)
+
+	allocationsPred = shortestPred(n, pred, states)
+
+	allocationsShared = allocationsRoro * roroSpeed + allocationsPred * predSpeed
+
+	return allocationsShared
+
+	
+#Debug
+if __name__ == "__main__":
+
+
+	predRoundRobin(5, np.array([3, 2, 1, 5, 2]), np.array([0, 0, 0, 0, 0]))
 
