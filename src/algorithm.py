@@ -1,6 +1,8 @@
 
 import numpy as np
 
+from numba import njit
+
 LAMBDA = 0.2
 
 """
@@ -10,6 +12,7 @@ pred: predictions of each task
 
 return an array of the power allocated to each task (which should sum to 1)
 """
+@njit(cache=True)
 def roundRobin(n, pred, states):
 
 	notDone = np.argwhere(states < 1).ravel()
@@ -22,7 +25,7 @@ def roundRobin(n, pred, states):
 	return allocation
 
 
-
+@njit(cache=True)
 def randomAlgorithm(n, pred, states):
 
 	notDone = np.argwhere(states < 1).ravel()
@@ -33,11 +36,10 @@ def randomAlgorithm(n, pred, states):
 	return allocation
 
 
-
+@njit(cache=True)
 def shortestPred(n, pred, states):
 
 	notDone = np.argwhere(states < 1).ravel()
-
 
 	argShortestNotDone = pred[notDone].argmin()
 
@@ -48,7 +50,7 @@ def shortestPred(n, pred, states):
 
 	return allocation
 
-
+@njit(cache=True)
 def predRoundRobin(n, pred, states):
 
 	#For random
@@ -69,10 +71,4 @@ def predRoundRobin(n, pred, states):
 
 	return allocationsShared
 
-	
-#Debug
-if __name__ == "__main__":
-
-
-	predRoundRobin(5, np.array([3, 2, 1, 5, 2]), np.array([0, 0, 0, 0, 0]))
 
