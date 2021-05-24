@@ -124,7 +124,7 @@ def testScheduling(durations, scheduling):
 
 	return score
 
-@njit(cache=True)
+#@njit(cache=True)
 def sortedDurationWithArrive(durations, arrive):
 	timeSpent = np.zeros(durations.size, dtype=np.float64)
 	states = np.zeros(durations.size, dtype=np.int8)
@@ -134,8 +134,12 @@ def sortedDurationWithArrive(durations, arrive):
 
 	indexes = np.argwhere(arrive == 0).ravel()
 
+	iteration = 0
+
 	#Note: isclose because of python precision
 	while not (np.abs(timeSpent - durations) < 1.e-8).all():
+
+		iteration += 1
 
 		notFinished = ~(np.abs(timeSpent[indexes] - durations[indexes]) < 1.e-8)
 
@@ -171,6 +175,34 @@ def sortedDurationWithArrive(durations, arrive):
 		states[done] = 1
 
 
+		#Verbose to print into a latex format
+		print("\\noindent Itération: "+str(iteration)+"\\\\\nTemps attribué pour chaque tache disponible:\\\\")
+		for ind, task in enumerate(indexes):
+			if ind+1 == len(indexes):
+				if task == miniIndex and notFinished.sum() > 0:
+					print(str(task)+": "+str(round(timeToSpent, 3))+"\\\\")
+				else:
+					print(str(task)+": "+str(0)+"\\\\")
+			else:
+				if task == miniIndex and notFinished.sum() > 0:
+					print(str(task)+": "+str(round(timeToSpent, 3))+", ", end="")
+				else:
+					print(str(task)+": "+str(0)+", ", end="")
+
+
+		print("Temps passé sur chaque tache:\\\\")
+		for task, time in enumerate(timeSpent):
+			if task+1 == len(timeSpent):
+				print(str(task)+": "+str(round(time, 3))+"\\\\")
+			else:
+				print(str(task)+": "+str(round(time, 3))+", ", end="")
+
+		print("Temps passé durant l'itération: "+str(round(timeToSpent, 3))+", temps total écoulé:", round(totalTime, 3), "\\\\")
+		print("Score actuel:", round(score, 3), "\\\\")
+
+		print()
+
+
 		close = np.argwhere(np.abs(arrive[mask] - totalTime) < 1.e-8).ravel()
 
 		indexes = np.concatenate( (indexes, mask[close]) )
@@ -191,7 +223,7 @@ the fraction of the computer allocated to the task at index i.
 It sum should be equal to 1.
 
 """
-@njit(cache=True)
+#@njit(cache=True)
 def executeAlgorithm(durations, predictions, algorithm, arrive=np.empty(0)):
 
 	if arrive.size == 0:
@@ -252,12 +284,33 @@ def executeAlgorithm(durations, predictions, algorithm, arrive=np.empty(0)):
 
 		timeSpent[currentIndexes] += allocation * smallestCoef
 
+		#Note: we're using here < 1.e-8 instead of using numpy.isclose because of the use of numba.
 		done = np.argwhere(np.abs(timeSpent - durations) < 1.e-8).ravel()
 
 		score += (states[done] != 1).sum() * totalTime
 
 
 		states[done] = 1
+
+		#Verbose to print into a latex format
+		print(f"\\noindent Itération: {iteration}\\\\\nTemps attribué pour chaque tache disponible:\\\\")
+		for ind, (task, time) in enumerate(zip(currentIndexes, allocation * smallestCoef)):
+			if ind+1 == len(currentIndexes):
+				print(str(task)+": "+str(round(time, 3))+"\\\\")
+			else:
+				print(str(task)+": "+str(round(time, 3))+", ", end="")
+
+		print("Temps passé sur chaque tache:\\\\")
+		for task, time in enumerate(timeSpent):
+			if task+1 == len(timeSpent):
+				print(str(task)+": "+str(round(time, 3))+"\\\\")
+			else:
+				print(str(task)+": "+str(round(time, 3))+", ", end="")
+
+		print("Temps passé durant l'itération: "+str(round(smallestCoef, 3))+", temps total écoulé:", round(totalTime, 3), "\\\\")
+		print("Score actuel:", round(score, 3), "\\\\")
+
+		print()
 
 
 		#Verify if we add task
@@ -358,8 +411,18 @@ def rapport(optimum, solution):
 #Debug
 import algorithm
 if __name__ == "__main__":
+	n = 10
+	error = 0.2
+	durations    = generateRandomParetoDurations(n)
+	predictions  = generateNormalPredictionsOnDurations(n, durations, sigma=error)
+	arrive = generateRandomArrives(n, exposant=0.92)
 
-	print("Score:", executeAlgorithm(np.array([3, 2, 2, 5, 2]), np.array([3, 3, 1, 4, 1]), algorithm.predRoundRobin) )
-	#print("Score:", executeAlgorithm(np.array([3, 2, 2, 5, 2]), np.array([3, 3, 1, 4, 1]), algorithm.predRoundRobin) )
+	durations = np.array([ 4.36618386,0.35502595,2.34828367,0.3507639,1.03361353,21.22382529,0.28340898,3.39257255,0.24312944,0.36299601 ])
+	predictions = np.array( [4.21771975, 0.43932975, 2.51858838, 0.40686916, 1.17715815, 20.78895229, 0.17439453, 3.35221127, 0.44273154, 0.32329664])
+	arrive = np.array([3.78971342, 6.011637, 1.41528382, 0.22950969, 0.29262065, 1.41659193, 0.47066157, 1.04768535, 1.34561503, 0.80059455])
+
+	#print("\\noindent Score final:", round(executeAlgorithm(durations, predictions, algorithm.predRoundRobin, arrive=arrive), 3), "\\\\")
+	print("\\noindent Score final:", round(sortedDurationWithArrive(durations, arrive=arrive), 3), "\\\\")
+	#print("Score:", executeAlgorithm(np.array([3, 2, 2, 5, 2]), np.array([3, 3, 0, 4, 1]), algorithm.shortestPred, arrive=np.array([3, 0, 0, 4, 1])) )
 
 

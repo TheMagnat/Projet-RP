@@ -12,7 +12,7 @@ pred: predictions of each task
 
 return an array of the power allocated to each task (which should sum to 1)
 """
-@njit(cache=True)
+#@njit(cache=True)
 def roundRobin(n, pred, states):
 
 	notDone = np.argwhere(states < 1).ravel()
@@ -25,7 +25,7 @@ def roundRobin(n, pred, states):
 	return allocation
 
 
-@njit(cache=True)
+#@njit(cache=True)
 def randomAlgorithm(n, pred, states):
 
 	notDone = np.argwhere(states < 1).ravel()
@@ -36,7 +36,7 @@ def randomAlgorithm(n, pred, states):
 	return allocation
 
 
-@njit(cache=True)
+#@njit(cache=True)
 def shortestPred(n, pred, states):
 
 	notDone = np.argwhere(states < 1).ravel()
@@ -50,7 +50,7 @@ def shortestPred(n, pred, states):
 
 	return allocation
 
-@njit(cache=True)
+#@njit(cache=True)
 def predRoundRobin(n, pred, states):
 
 	#For random
