@@ -1,7 +1,7 @@
 
 import numpy as np
 
-from numba import njit
+#from numba import njit
 
 LAMBDA = 0.2
 
